@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Midnight Studio — the only theme. Always dark. */
+    --background: 240 7% 9%;
+    --foreground: 270 6% 89%;
+
+    --surface: 240 7% 9%;
+    --surface-dim: 240 7% 9%;
+    --surface-bright: 240 3% 23%;
+    --surface-container-lowest: 240 11% 6%;
+    --surface-container-low: 240 5% 11%;
+    --surface-container: 240 5% 13%;
+    --surface-container-high: 240 4% 17%;
+    --surface-container-highest: 240 3% 21%;
+
+    --primary: 45 86% 63%;
+    --primary-foreground: 42 100% 12%;
+    --primary-container: 45 60% 53%;
+
+    --secondary: 213 24% 79%;
+    --secondary-foreground: 215 24% 19%;
+    --secondary-container: 215 14% 30%;
+
+    --tertiary: 27 100% 79%;
+    --tertiary-foreground: 25 100% 15%;
+    --tertiary-container: 27 84% 65%;
+
+    --muted: 240 4% 17%;
+    --muted-foreground: 41 26% 75%;
+
+    --accent: 240 4% 17%;
+    --accent-foreground: 270 6% 89%;
+
+    --destructive: 6 100% 84%;
+    --destructive-foreground: 357 100% 21%;
+
+    --outline: 41 11% 54%;
+    --outline-variant: 41 19% 25%;
+  }
+
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html,
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11", "tnum";
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
+  }
+
+  /* Tabular numerics everywhere weights/reps appear */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Inputs: pressed-into-surface look */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"] {
+    @apply bg-surface-low text-foreground rounded-md;
+    box-shadow: inset 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+  }
+
+  /* Subtle journal-stitch divider */
+  .stitch-line {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      hsl(var(--outline-variant)) 0,
+      hsl(var(--outline-variant)) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+    width: 1px;
+  }
+}
+
+@layer components {
+  /* "Big advance" — full-width primary footer button */
+  .big-advance {
+    @apply w-full rounded-xl px-6 py-5 text-button-label;
+    @apply bg-primary-container text-primary-foreground;
+    @apply shadow-lift active:scale-[0.98] transition-transform duration-100;
+    min-height: theme(spacing.tap);
+  }
+
+  /* Workout card — leather-bound feel */
+  .workout-card {
+    @apply rounded-lg p-edge bg-surface-container border border-outline-variant/50;
+    background-image: linear-gradient(
+      to bottom,
+      hsl(var(--surface-container-high)) 0%,
+      hsl(var(--surface-container)) 100%
+    );
+  }
+}
