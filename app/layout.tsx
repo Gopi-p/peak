@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Lexend, Epilogue } from "next/font/google";
-import { Providers } from "./providers";
 import "./globals.css";
 
 const lexend = Lexend({
@@ -42,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${lexend.variable} ${epilogue.variable}`}>
       <body className="font-sans antialiased min-h-dvh bg-background text-foreground">
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );
