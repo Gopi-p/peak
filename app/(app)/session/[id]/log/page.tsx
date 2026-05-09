@@ -39,6 +39,12 @@ export default async function LogSetPage({
   const lastSets = (lastEntry?.sets ?? []).filter((s: any) => !s.isWarmup);
   const suggestion = suggestNext(lastSets);
 
+  // Sets already logged in *this* session/entry — used as the highest-priority
+  // prefill so set #2 starts where set #1 finished.
+  const currentSets = (entry.sets ?? [])
+    .filter((s: any) => !s.isWarmup)
+    .map((s: any) => ({ weight: s.weight, reps: s.reps, rpe: s.rpe }));
+
   const settings = await Settings.findOne({ ownerEmail: email }).lean<any>();
   const restDefault = settings?.defaultRestSeconds ?? 90;
   const rpeEnabled = settings?.rpeEnabled ?? true;
@@ -52,6 +58,7 @@ export default async function LogSetPage({
         exerciseName={ex?.name ?? entry.exerciseId}
         cue={ex?.cue ?? ""}
         lastSets={lastSets.map((s: any) => ({ weight: s.weight, reps: s.reps, rpe: s.rpe }))}
+        currentSets={currentSets}
         suggestion={suggestion}
         restDefault={restDefault}
         rpeEnabled={rpeEnabled}

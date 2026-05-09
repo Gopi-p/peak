@@ -18,6 +18,7 @@ type Props = {
   exerciseName: string;
   cue: string;
   lastSets: { weight: number; reps: number; rpe?: number }[];
+  currentSets: { weight: number; reps: number; rpe?: number }[];
   suggestion: Suggestion | null;
   restDefault: number;
   rpeEnabled: boolean;
@@ -26,8 +27,15 @@ type Props = {
 export function SetLogger(props: Props) {
   const router = useRouter();
   const toast = useToast();
-  const [weight, setWeight] = React.useState(props.suggestion?.weight ?? props.lastSets[0]?.weight ?? 60);
-  const [reps, setReps] = React.useState(props.suggestion?.reps ?? props.lastSets[0]?.reps ?? 8);
+  // Prefill priority: latest set logged in *this* session > suggestion based
+  // on prior session > top set of the prior session > hard fallback.
+  const justLogged = props.currentSets[props.currentSets.length - 1];
+  const [weight, setWeight] = React.useState(
+    justLogged?.weight ?? props.suggestion?.weight ?? props.lastSets[0]?.weight ?? 60,
+  );
+  const [reps, setReps] = React.useState(
+    justLogged?.reps ?? props.suggestion?.reps ?? props.lastSets[0]?.reps ?? 10,
+  );
   const [rpe, setRpe] = React.useState<number | null>(null);
   const [isWarmup, setIsWarmup] = React.useState(false);
   const [resting, setResting] = React.useState(false);
