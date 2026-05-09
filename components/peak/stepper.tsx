@@ -36,9 +36,9 @@ export function Stepper({
       >
         <Minus className="mx-auto h-6 w-6" />
       </button>
-      <div className="flex flex-col items-center">
+      <div className="flex min-w-0 flex-1 flex-col items-center">
         {label && <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>}
-        <span className="num font-display text-numeric-display text-foreground">
+        <span className="num font-display text-numeric-display text-foreground whitespace-nowrap">
           {formatValue ? formatValue(value) : value}
         </span>
       </div>

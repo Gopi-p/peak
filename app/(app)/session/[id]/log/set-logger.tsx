@@ -123,7 +123,6 @@ export function SetLogger(props: Props) {
             onChange={setWeight}
             step={2.5}
             min={0}
-            formatValue={(n) => `${n} kg`}
             label="kg"
           />
         </CardContent>

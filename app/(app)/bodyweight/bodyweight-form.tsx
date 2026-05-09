@@ -46,7 +46,8 @@ export function BodyWeightForm() {
           step={0.1}
           min={20}
           max={300}
-          formatValue={(n) => `${n.toFixed(1)} kg`}
+          formatValue={(n) => n.toFixed(1)}
+          label="kg"
         />
         <Button size="lg" onClick={submit} disabled={pending} className="w-full">
           {pending ? "Saving…" : "Log weight"}
