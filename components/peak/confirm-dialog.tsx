@@ -46,7 +46,7 @@ export function ConfirmDialog({
           <div className="mt-5 flex gap-3">
             <Button
               variant="ghost"
-              size="lg"
+              size="md"
               className="flex-1"
               onClick={() => onOpenChange(false)}
               disabled={pending}
@@ -55,7 +55,7 @@ export function ConfirmDialog({
             </Button>
             <Button
               variant={destructive ? "destructive" : "primary"}
-              size="lg"
+              size="md"
               className="flex-1"
               onClick={onConfirm}
               disabled={pending}
