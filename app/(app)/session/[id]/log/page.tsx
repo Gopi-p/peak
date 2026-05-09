@@ -4,6 +4,7 @@ import { Session, Settings } from "@/lib/db/models";
 import { requireUser } from "@/lib/session-guard";
 import { getExercise } from "@/lib/exercises";
 import { suggestNext } from "@/lib/analytics/overload";
+import { BackBar } from "@/components/peak/back-bar";
 import { SetLogger } from "./set-logger";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export default async function LogSetPage({
   const { entryId } = await searchParams;
   const { email } = await requireUser();
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email }).lean<any>();
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null }).lean<any>();
   if (!session || !entryId) notFound();
   const entry = (session.entries ?? []).find((e: any) => String(e._id) === String(entryId));
   if (!entry) notFound();
@@ -28,6 +29,7 @@ export default async function LogSetPage({
   // Pull the most-recent prior session that has this exercise to preview last numbers.
   const prior = await Session.findOne({
     ownerEmail: email,
+    deletedAt: null,
     "entries.exerciseId": entry.exerciseId,
     _id: { $ne: session._id },
   })
@@ -42,15 +44,18 @@ export default async function LogSetPage({
   const rpeEnabled = settings?.rpeEnabled ?? true;
 
   return (
-    <SetLogger
-      sessionId={id}
-      entryId={String(entryId)}
-      exerciseName={ex?.name ?? entry.exerciseId}
-      cue={ex?.cue ?? ""}
-      lastSets={lastSets.map((s: any) => ({ weight: s.weight, reps: s.reps, rpe: s.rpe }))}
-      suggestion={suggestion}
-      restDefault={restDefault}
-      rpeEnabled={rpeEnabled}
-    />
+    <>
+      <BackBar fallbackHref={`/session/${id}`} />
+      <SetLogger
+        sessionId={id}
+        entryId={String(entryId)}
+        exerciseName={ex?.name ?? entry.exerciseId}
+        cue={ex?.cue ?? ""}
+        lastSets={lastSets.map((s: any) => ({ weight: s.weight, reps: s.reps, rpe: s.rpe }))}
+        suggestion={suggestion}
+        restDefault={restDefault}
+        rpeEnabled={rpeEnabled}
+      />
+    </>
   );
 }

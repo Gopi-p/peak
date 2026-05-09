@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Stepper } from "@/components/peak/stepper";
 import { RestTimer } from "@/components/peak/rest-timer";
 import { PrFlash } from "@/components/peak/pr-flash";
+import { useToast } from "@/components/peak/toast-provider";
 import { formatWeight } from "@/lib/utils";
 import type { Suggestion } from "@/lib/analytics/overload";
 
@@ -24,6 +25,7 @@ type Props = {
 
 export function SetLogger(props: Props) {
   const router = useRouter();
+  const toast = useToast();
   const [weight, setWeight] = React.useState(props.suggestion?.weight ?? props.lastSets[0]?.weight ?? 60);
   const [reps, setReps] = React.useState(props.suggestion?.reps ?? props.lastSets[0]?.reps ?? 8);
   const [rpe, setRpe] = React.useState<number | null>(null);
@@ -33,25 +35,38 @@ export function SetLogger(props: Props) {
   const [pending, setPending] = React.useState(false);
 
   const logSet = async () => {
-    setPending(true);
-    const res = await fetch(`/api/sessions/${props.sessionId}/sets`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        entryId: props.entryId,
-        weight,
-        reps,
-        rpe: rpe ?? undefined,
-        isWarmup,
-      }),
-    });
-    setPending(false);
-    if (!res.ok) return;
-    const data = (await res.json()) as { pr?: { isPr: boolean; kind: string | null } };
-    if (data.pr?.isPr) {
-      setPr(data.pr.kind === "weight-for-reps" ? "Rep PR" : "Estimated 1RM PR");
+    if (reps < 1) {
+      toast.error("Reps must be at least 1.");
+      return;
     }
-    if (!isWarmup) setResting(true);
+    setPending(true);
+    try {
+      const res = await fetch(`/api/sessions/${props.sessionId}/sets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entryId: props.entryId,
+          weight,
+          reps,
+          rpe: rpe ?? undefined,
+          isWarmup,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Server returned ${res.status}`);
+      }
+      const data = (await res.json()) as { pr?: { isPr: boolean; kind: string | null } };
+      if (data.pr?.isPr) {
+        setPr(data.pr.kind === "weight-for-reps" ? "Rep PR" : "Estimated 1RM PR");
+      }
+      if (!isWarmup) setResting(true);
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't log set");
+    } finally {
+      setPending(false);
+    }
   };
 
   const sameAsLast = () => {

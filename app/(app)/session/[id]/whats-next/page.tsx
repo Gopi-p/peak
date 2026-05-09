@@ -15,7 +15,7 @@ export default async function WhatsNextPage({
   const { id } = await params;
   const { email } = await requireUser();
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email }).lean<any>();
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null }).lean<any>();
   const lastEntry = session?.entries?.[session.entries.length - 1];
   const lastMuscle = session?.musclesTrained?.[session.musclesTrained.length - 1];
 

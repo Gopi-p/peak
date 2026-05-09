@@ -4,6 +4,7 @@ import { Session, PersonalRecord } from "@/lib/db/models";
 import { requireUser } from "@/lib/session-guard";
 import { z } from "zod";
 import { setSchema } from "@/lib/validations";
+import { parseJson } from "@/lib/api-utils";
 import { checkPr } from "@/lib/analytics/pr";
 
 const inputSchema = setSchema.extend({ entryId: z.string() });
@@ -14,10 +15,11 @@ export async function POST(
 ) {
   const { id } = await params;
   const { email } = await requireUser();
-  const body = inputSchema.parse(await req.json());
+  const body = await parseJson(req, inputSchema);
+  if (body instanceof NextResponse) return body;
 
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email });
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null });
   if (!session) return NextResponse.json({ error: "not found" }, { status: 404 });
   const entry = session.entries.id(body.entryId);
   if (!entry) return NextResponse.json({ error: "entry not found" }, { status: 404 });
@@ -36,7 +38,7 @@ export async function POST(
   let pr = { isPr: false, kind: null as null | string };
   if (!body.isWarmup) {
     const history = await Session.find(
-      { ownerEmail: email, "entries.exerciseId": entry.exerciseId, _id: { $ne: session._id } },
+      { ownerEmail: email, "entries.exerciseId": entry.exerciseId, _id: { $ne: session._id }, deletedAt: null },
       { entries: 1 },
     ).lean<any[]>();
     const sets: { weight: number; reps: number }[] = [];

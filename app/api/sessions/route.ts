@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 export async function GET() {
   const { email } = await requireUser();
   await connectDb();
-  const sessions = await Session.find({ ownerEmail: email })
+  const sessions = await Session.find({ ownerEmail: email, deletedAt: null })
     .sort({ startedAt: -1 })
     .limit(50)
     .lean();

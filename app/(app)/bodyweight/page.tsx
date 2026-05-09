@@ -4,13 +4,14 @@ import { requireUser } from "@/lib/session-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BodyWeightForm } from "./bodyweight-form";
 import { BodyWeightChart } from "@/components/peak/bodyweight-chart";
+import { RecentEntries } from "./recent-entries";
 
 export const dynamic = "force-dynamic";
 
 export default async function BodyWeightPage() {
   const { email } = await requireUser();
   await connectDb();
-  const entries = await BodyWeight.find({ ownerEmail: email })
+  const entries = await BodyWeight.find({ ownerEmail: email, deletedAt: null })
     .sort({ measuredAt: 1 })
     .limit(180)
     .lean<any[]>();
@@ -19,6 +20,14 @@ export default async function BodyWeightPage() {
     date: new Date(e.measuredAt).toISOString().slice(0, 10),
     kg: e.kg,
   }));
+  const recent = [...entries]
+    .reverse()
+    .slice(0, 14)
+    .map((e) => ({
+      id: String(e._id),
+      kg: e.kg,
+      measuredAt: new Date(e.measuredAt).toISOString(),
+    }));
 
   return (
     <div className="space-y-5">
@@ -37,6 +46,7 @@ export default async function BodyWeightPage() {
           <BodyWeightChart points={points} />
         </CardContent>
       </Card>
+      <RecentEntries entries={recent} />
     </div>
   );
 }

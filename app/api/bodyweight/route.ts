@@ -3,11 +3,12 @@ import { connectDb } from "@/lib/db/connect";
 import { BodyWeight } from "@/lib/db/models";
 import { requireUser } from "@/lib/session-guard";
 import { bodyWeightSchema } from "@/lib/validations";
+import { parseJson } from "@/lib/api-utils";
 
 export async function GET() {
   const { email } = await requireUser();
   await connectDb();
-  const entries = await BodyWeight.find({ ownerEmail: email })
+  const entries = await BodyWeight.find({ ownerEmail: email, deletedAt: null })
     .sort({ measuredAt: -1 })
     .limit(180)
     .lean();
@@ -16,7 +17,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { email } = await requireUser();
-  const body = bodyWeightSchema.parse(await req.json());
+  const body = await parseJson(req, bodyWeightSchema);
+  if (body instanceof NextResponse) return body;
   await connectDb();
   const doc = await BodyWeight.create({
     ownerEmail: email,

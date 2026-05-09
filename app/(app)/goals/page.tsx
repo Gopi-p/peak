@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/session-guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GoalForm } from "./goal-form";
+import { DeleteGoalButton } from "./delete-goal-button";
 import { rollupByWeek } from "@/lib/analytics/volume";
 import { startOfWeek } from "@/lib/utils";
 
@@ -12,12 +13,13 @@ export const dynamic = "force-dynamic";
 export default async function GoalsPage() {
   const { email } = await requireUser();
   await connectDb();
-  const goals = await Goal.find({ ownerEmail: email, archivedAt: null })
+  const goals = await Goal.find({ ownerEmail: email, deletedAt: null })
     .sort({ createdAt: -1 })
     .lean<any[]>();
   const since = startOfWeek(new Date());
   const sessions = await Session.find({
     ownerEmail: email,
+    deletedAt: null,
     startedAt: { $gte: since },
   }).lean<any[]>();
   const week = rollupByWeek(
@@ -69,7 +71,10 @@ export default async function GoalsPage() {
         return (
           <Card key={String(g._id)}>
             <CardHeader>
-              <CardTitle className="text-xl">{g.title}</CardTitle>
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle className="text-xl">{g.title}</CardTitle>
+                <DeleteGoalButton goalId={String(g._id)} title={g.title} />
+              </div>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-baseline justify-between">

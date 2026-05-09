@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { sessionVolume } from "@/lib/analytics/volume";
 import { ActiveSessionActions } from "./active-session-actions";
+import { SetRow } from "./set-row";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export default async function ActiveSessionPage({
   const { id } = await params;
   const { email } = await requireUser();
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email }).lean<any>();
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null }).lean<any>();
   if (!session) notFound();
 
   const startedAt = new Date(session.startedAt);
@@ -77,17 +78,20 @@ export default async function ActiveSessionPage({
                   <p className="text-muted-foreground text-sm">No sets yet.</p>
                 )}
                 {(entry.sets ?? []).map((set: any, i: number) => (
-                  <div
+                  <SetRow
                     key={set._id?.toString() ?? i}
-                    className="flex items-center justify-between rounded-md bg-surface-low px-3 py-2 text-body-md"
-                  >
-                    <span className="text-muted-foreground text-sm">{i + 1}</span>
-                    <span className="num">
-                      {set.weight} kg × {set.reps}
-                      {set.rpe ? ` @ ${set.rpe}` : ""}
-                      {set.isWarmup ? " · warmup" : ""}
-                    </span>
-                  </div>
+                    sessionId={id}
+                    index={i}
+                    set={{
+                      _id: String(set._id),
+                      entryId: String(entry._id),
+                      weight: set.weight,
+                      reps: set.reps,
+                      rpe: set.rpe,
+                      isWarmup: set.isWarmup,
+                      tags: set.tags,
+                    }}
+                  />
                 ))}
                 <Button asChild size="lg" variant="secondary" className="w-full mt-2">
                   <Link href={`/session/${id}/log?entryId=${entry._id}`}>Add set</Link>

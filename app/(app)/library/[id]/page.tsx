@@ -7,6 +7,7 @@ import { epley1RM } from "@/lib/utils";
 import { ExerciseProgressChart } from "@/components/peak/exercise-progress-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BackBar } from "@/components/peak/back-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function ExerciseDetailPage({
   await connectDb();
   const sessions = await Session.find({
     ownerEmail: email,
+    deletedAt: null,
     "entries.exerciseId": id,
   })
     .sort({ startedAt: 1 })
@@ -48,6 +50,7 @@ export default async function ExerciseDetailPage({
 
   return (
     <div className="space-y-5">
+      <BackBar fallbackHref="/library" />
       <header>
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           {ex.equipment} · {ex.movementPattern}
