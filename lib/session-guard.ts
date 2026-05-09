@@ -1,10 +1,9 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "./auth";
+/**
+ * Single-user app — no auth gate. The "owner" identifier exists only to keep
+ * the data layer schema-compatible in case it's ever ported elsewhere.
+ */
+export const OWNER = process.env.PEAK_OWNER ?? "peak";
 
 export async function requireUser(): Promise<{ email: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    throw new Response("Unauthorized", { status: 401 });
-  }
-  return { email: session.user.email };
+  return { email: OWNER };
 }

@@ -10,7 +10,9 @@ Stitch project "Peak Workout Tracker" (project ID `2710955204697556366`,
 - Next.js 15 (App Router) + TypeScript
 - Tailwind 3.4 + shadcn-style primitives in `components/ui/`
 - MongoDB Atlas via Mongoose (`lib/db/`)
-- NextAuth v4 — credentials provider, single email gated by env vars
+- **No auth.** Single user, single device. The app opens straight to `/today`.
+  Every document carries an `ownerEmail` field set to `process.env.PEAK_OWNER`
+  (default `"peak"`) for hygiene only — there is no login.
 - Zod (`lib/validations.ts`) for every request body
 - Recharts for analytics visuals
 - Dexie (`lib/offline/db.ts`) for offline IndexedDB queue + service worker (`public/sw.js`)
@@ -24,15 +26,8 @@ npm run typecheck   # tsc --noEmit
 npm run lint        # next lint
 ```
 
-Single-user credentials are env-gated:
-
-```bash
-# generate the bcrypt hash once and paste into .env.local
-node -e "console.log(require('bcryptjs').hashSync(process.argv[1], 10))" 'your-password'
-```
-
-`.env.local` keys: `MONGODB_URI`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`,
-`PEAK_USER_EMAIL`, `PEAK_USER_PASSWORD_HASH`.
+`.env.local` keys: `MONGODB_URI` (required), `PEAK_OWNER` (optional, defaults
+to "peak").
 
 ## Layout
 
@@ -49,14 +44,12 @@ app/
     bodyweight/         # body weight log (Phase 3)
     settings/
   api/
-    auth/[...nextauth]/
     sessions/           # POST start, GET list
     sessions/[id]/...   # finish, entries, sets
     settings/
     goals/
     bodyweight/
     sync/sessions/      # offline drain endpoint
-  login/
 components/
   ui/                   # button, card, input, badge — shadcn-style
   peak/                 # domain-specific (numeric keypad, stepper, muscle grid, charts, etc.)
@@ -64,8 +57,7 @@ lib/
   constants.ts          # MUSCLE_GROUPS, VOLUME_GUIDANCE (MEV/MAV/MRV)
   exercises.ts          # loader for data/exercises.json
   validations.ts        # Zod schemas
-  auth.ts               # NextAuth options
-  session-guard.ts      # requireUser() helper for API routes / pages
+  session-guard.ts      # requireUser() — returns owner identifier (no auth)
   db/
     connect.ts          # mongoose singleton
     models.ts           # Session, BodyWeight, Goal, PersonalRecord, Settings
@@ -89,9 +81,9 @@ public/
 
 ## Conventions
 
-- **Single user.** Every collection has `ownerEmail`. The auth layer pins it to
-  `process.env.PEAK_USER_EMAIL`. Use `requireUser()` at the top of every
-  protected handler/page.
+- **Single user, no auth.** Every collection has `ownerEmail` set from
+  `PEAK_OWNER` (default `"peak"`). Use `requireUser()` at the top of every
+  handler/page that needs the owner identifier.
 - **Offline-first writes.** Set logging always goes via the Dexie queue first;
   the sync worker drains to `/api/sync/sessions`. The non-offline path
   (`/api/sessions/[id]/sets`) is used directly when online.
@@ -129,8 +121,8 @@ public/
 
 ## Dev workflow
 
-1. `cp .env.example .env.local`, fill in MongoDB URI, secret, and password hash.
-2. `npm run dev`, browse `http://localhost:3000`.
+1. `cp .env.example .env.local`, fill in `MONGODB_URI`.
+2. `npm run dev`, browse `http://localhost:3000` — app opens straight to Today.
 3. PWA install: open in Safari iOS, "Add to Home Screen."
 
 ## Related files
