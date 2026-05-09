@@ -21,7 +21,7 @@ export default async function SummaryPage({
   const { id } = await params;
   const { email } = await requireUser();
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email }).lean<any>();
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null }).lean<any>();
   if (!session) notFound();
   const ended = session.endedAt ? new Date(session.endedAt) : new Date();
   const minutes = Math.max(

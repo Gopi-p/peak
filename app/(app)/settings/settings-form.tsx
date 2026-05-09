@@ -3,39 +3,38 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/components/peak/toast-provider";
 
 type Initial = {
-  units: "kg" | "lbs";
   defaultRestSeconds: number;
   rpeEnabled: boolean;
-  showWarmups: boolean;
 };
 
 export function SettingsForm({ initial }: { initial: Initial }) {
   const [state, setState] = React.useState(initial);
-  const [saved, setSaved] = React.useState(false);
+  const [pending, setPending] = React.useState(false);
+  const toast = useToast();
+
   const save = async () => {
-    await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(state),
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    setPending(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state),
+      });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't save settings");
+    } finally {
+      setPending(false);
+    }
   };
+
   return (
     <Card>
       <CardContent className="space-y-4 pt-edge">
-        <Row label="Units">
-          <select
-            value={state.units}
-            onChange={(e) => setState({ ...state, units: e.target.value as "kg" | "lbs" })}
-            className="rounded-md bg-surface-low px-3 py-2"
-          >
-            <option value="kg">kg</option>
-            <option value="lbs">lbs</option>
-          </select>
-        </Row>
         <Row label="Default rest (seconds)">
           <input
             type="number"
@@ -56,16 +55,8 @@ export function SettingsForm({ initial }: { initial: Initial }) {
             className="h-5 w-5 accent-primary"
           />
         </Row>
-        <Row label="Count warmup sets in volume">
-          <input
-            type="checkbox"
-            checked={state.showWarmups}
-            onChange={(e) => setState({ ...state, showWarmups: e.target.checked })}
-            className="h-5 w-5 accent-primary"
-          />
-        </Row>
-        <Button size="lg" onClick={save} className="w-full">
-          {saved ? "Saved" : "Save"}
+        <Button size="lg" onClick={save} disabled={pending} className="w-full">
+          {pending ? "Saving…" : "Save"}
         </Button>
       </CardContent>
     </Card>

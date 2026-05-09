@@ -4,8 +4,8 @@ import { MUSCLE_GROUPS } from "./constants";
 export const muscleGroupSchema = z.enum(MUSCLE_GROUPS);
 
 export const setSchema = z.object({
-  weight: z.number().min(0).max(1000),
-  reps: z.number().int().min(0).max(200),
+  weight: z.number().min(0).max(1000), // 0 valid for bodyweight exercises
+  reps: z.number().int().min(1).max(200),
   rpe: z.number().min(1).max(10).optional(),
   isWarmup: z.boolean().optional().default(false),
   tags: z.array(z.string()).optional().default([]),
@@ -44,7 +44,7 @@ export const bodyWeightSchema = z.object({
 export const goalSchema = z.object({
   title: z.string().min(1).max(120),
   type: z.enum(["lift-target", "weekly-sets", "bodyweight", "frequency"]),
-  targetValue: z.number(),
+  targetValue: z.number().positive(),
   targetUnit: z.string().optional(),
   exerciseId: z.string().optional(),
   muscle: muscleGroupSchema.optional(),
@@ -52,10 +52,8 @@ export const goalSchema = z.object({
 });
 
 export const settingsSchema = z.object({
-  units: z.enum(["kg", "lbs"]).optional(),
   defaultRestSeconds: z.number().int().min(15).max(600).optional(),
   rpeEnabled: z.boolean().optional(),
-  showWarmups: z.boolean().optional(),
 });
 
 export const syncEnvelopeSchema = z.object({

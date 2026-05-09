@@ -18,6 +18,7 @@ async function getData(email: string) {
   since.setDate(since.getDate() - 28);
   const sessions = await Session.find({
     ownerEmail: email,
+    deletedAt: null,
     startedAt: { $gte: since },
   })
     .sort({ startedAt: -1 })

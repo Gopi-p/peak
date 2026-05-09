@@ -18,6 +18,7 @@ export default async function MusclePickerPage({
   const since = startOfWeek(new Date());
   const sessions = await Session.find({
     ownerEmail: email,
+    deletedAt: null,
     startedAt: { $gte: since },
   }).lean<any[]>();
   const week = rollupByWeek(

@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/session-guard";
 import { getExercise } from "@/lib/exercises";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BackBar } from "@/components/peak/back-bar";
+import { DeleteSessionButton } from "./delete-session-button";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +18,12 @@ export default async function SessionDetailPage({
   const { id } = await params;
   const { email } = await requireUser();
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email }).lean<any>();
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null }).lean<any>();
   if (!session) notFound();
 
   return (
     <div className="space-y-5">
+      <BackBar fallbackHref="/history" />
       <header>
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Session</p>
         <h1 className="font-display text-headline-xl">
@@ -61,6 +64,8 @@ export default async function SessionDetailPage({
           </Card>
         );
       })}
+
+      <DeleteSessionButton sessionId={String(session._id)} />
     </div>
   );
 }

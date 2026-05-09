@@ -3,6 +3,7 @@ import { connectDb } from "@/lib/db/connect";
 import { Settings } from "@/lib/db/models";
 import { requireUser } from "@/lib/session-guard";
 import { settingsSchema } from "@/lib/validations";
+import { parseJson } from "@/lib/api-utils";
 
 export async function GET() {
   const { email } = await requireUser();
@@ -13,7 +14,8 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   const { email } = await requireUser();
-  const patch = settingsSchema.parse(await req.json());
+  const patch = await parseJson(req, settingsSchema);
+  if (patch instanceof NextResponse) return patch;
   await connectDb();
   const s = await Settings.findOneAndUpdate(
     { ownerEmail: email },

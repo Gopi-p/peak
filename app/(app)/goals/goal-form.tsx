@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/peak/toast-provider";
 import { MUSCLE_GROUPS } from "@/lib/constants";
 import { EXERCISES } from "@/lib/exercises";
 
 export function GoalForm() {
   const router = useRouter();
+  const toast = useToast();
   const [title, setTitle] = React.useState("");
   const [type, setType] = React.useState<"lift-target" | "weekly-sets" | "bodyweight" | "frequency">(
     "weekly-sets",
@@ -21,21 +23,39 @@ export function GoalForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (target <= 0) {
+      toast.error("Target value must be greater than 0.");
+      return;
+    }
+    if (title.trim().length === 0) {
+      toast.error("Give the goal a title.");
+      return;
+    }
     setPending(true);
-    await fetch("/api/goals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        type,
-        targetValue: target,
-        muscle: type === "weekly-sets" ? muscle : undefined,
-        exerciseId: type === "lift-target" ? exerciseId : undefined,
-      }),
-    });
-    setPending(false);
-    setTitle("");
-    router.refresh();
+    try {
+      const res = await fetch("/api/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          type,
+          targetValue: target,
+          muscle: type === "weekly-sets" ? muscle : undefined,
+          exerciseId: type === "lift-target" ? exerciseId : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Server returned ${res.status}`);
+      }
+      setTitle("");
+      toast.success("Goal added.");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't add goal");
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -49,6 +69,7 @@ export function GoalForm() {
             placeholder="Title (e.g., Bench Press 100kg)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            maxLength={120}
             required
           />
           <select
@@ -92,6 +113,8 @@ export function GoalForm() {
             value={target}
             onChange={(e) => setTarget(Number(e.target.value))}
             placeholder="Target value"
+            min={0.0001}
+            step="any"
             required
           />
           <Button type="submit" size="lg" disabled={pending} className="w-full">

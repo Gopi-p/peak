@@ -19,6 +19,7 @@ export default async function InsightsPage() {
   since.setDate(since.getDate() - 8 * 7);
   const sessions = await Session.find({
     ownerEmail: email,
+    deletedAt: null,
     startedAt: { $gte: since },
   }).lean<any[]>();
 
@@ -55,7 +56,7 @@ export default async function InsightsPage() {
     {} as Record<MuscleGroup, number>,
   );
 
-  const recentBw = await BodyWeight.find({ ownerEmail: email })
+  const recentBw = await BodyWeight.find({ ownerEmail: email, deletedAt: null })
     .sort({ measuredAt: -1 })
     .limit(1)
     .lean<any[]>();

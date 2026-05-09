@@ -7,6 +7,7 @@ import { exercisesForMuscle, rankExercises } from "@/lib/exercises";
 import { MUSCLE_GROUPS, type MuscleGroup } from "@/lib/constants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BackBar } from "@/components/peak/back-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function ExercisePickerPage({
   since.setDate(since.getDate() - 14);
   const recent = await Session.find({
     ownerEmail: email,
+    deletedAt: null,
     startedAt: { $gte: since },
   }).lean<any[]>();
   const usage: Record<string, number> = {};
@@ -39,6 +41,7 @@ export default async function ExercisePickerPage({
 
   return (
     <div className="space-y-5">
+      <BackBar fallbackHref={`/session/${id}/muscle`} />
       <header>
         <p className="text-xs uppercase tracking-widest text-muted-foreground">{muscle}</p>
         <h1 className="font-display text-headline-xl">Pick an exercise</h1>

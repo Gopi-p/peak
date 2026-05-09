@@ -24,7 +24,7 @@ export async function GET(
   if (!ex) return NextResponse.json({ error: "unknown exercise" }, { status: 400 });
 
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email });
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null });
   if (!session) return NextResponse.json({ error: "not found" }, { status: 404 });
   const order = (session.entries?.length ?? 0) + 1;
   session.entries.push({ exerciseId, sets: [], notes: "", order });

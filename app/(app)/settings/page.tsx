@@ -17,10 +17,8 @@ export default async function SettingsPage() {
       </header>
       <SettingsForm
         initial={{
-          units: s?.units ?? "kg",
           defaultRestSeconds: s?.defaultRestSeconds ?? 90,
           rpeEnabled: s?.rpeEnabled ?? true,
-          showWarmups: s?.showWarmups ?? true,
         }}
       />
     </div>

@@ -13,7 +13,7 @@ export async function POST(
   const { id } = await params;
   const { email } = await requireUser();
   await connectDb();
-  const session = await Session.findOne({ _id: id, ownerEmail: email });
+  const session = await Session.findOne({ _id: id, ownerEmail: email, deletedAt: null });
   if (!session) return NextResponse.json({ error: "not found" }, { status: 404 });
   session.endedAt = new Date();
   const combo = classifyCombination(

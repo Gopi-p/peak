@@ -3,6 +3,7 @@ import { connectDb } from "@/lib/db/connect";
 import { Session } from "@/lib/db/models";
 import { requireUser } from "@/lib/session-guard";
 import { syncEnvelopeSchema } from "@/lib/validations";
+import { parseJson } from "@/lib/api-utils";
 import { classifyCombination } from "@/lib/analytics/combo";
 import type { MuscleGroup } from "@/lib/constants";
 
@@ -12,7 +13,8 @@ import type { MuscleGroup } from "@/lib/constants";
  */
 export async function POST(req: Request) {
   const { email } = await requireUser();
-  const body = syncEnvelopeSchema.parse(await req.json());
+  const body = await parseJson(req, syncEnvelopeSchema);
+  if (body instanceof NextResponse) return body;
   await connectDb();
 
   const upserted: { clientId: string; serverId: string }[] = [];
