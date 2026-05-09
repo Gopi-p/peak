@@ -4,7 +4,7 @@ import { ServiceWorkerBootstrap } from "@/components/peak/service-worker-bootstr
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col pt-[env(safe-area-inset-top)]">
       <ServiceWorkerBootstrap />
       <OnlineIndicator />
       <main className="flex-1 px-edge pt-edge pb-[96px]">{children}</main>
